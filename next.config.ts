@@ -55,7 +55,7 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: ['mongodb'],
   experimental: {
-    serverComponentsExternalPackages: ['mongodb']
+    // Remove deprecated serverComponentsExternalPackages
   }
 };
 

@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../../components/AdminLayout';
+
+// Force dynamic rendering to prevent build-time API calls
+export const dynamic = 'force-dynamic';
 import { FaEnvelope, FaPhone, FaUser, FaCalendarAlt, FaReply, FaTrash, FaEye } from 'react-icons/fa';
 import { MdMarkEmailRead, MdMarkEmailUnread } from 'react-icons/md';
 import { ExclamationTriangleIcon, EnvelopeIcon, UserIcon, PhoneIcon, ClockIcon } from '@heroicons/react/24/outline';

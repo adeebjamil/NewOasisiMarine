@@ -6,8 +6,11 @@ const MONGODB_DB = 'oasismarineuae';
 // During build time, DATABASE_URL might not be available
 // Only throw error when actually trying to connect
 function validateDatabaseUrl() {
-  if (!MONGODB_URI) {
-    throw new Error('Please define the DATABASE_URL environment variable inside .env');
+  if (!MONGODB_URI || MONGODB_URI === 'mongodb://localhost:27017/oasismarineuae') {
+    // During build time, we use a dummy connection string
+    if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL) {
+      throw new Error('Please define the DATABASE_URL environment variable inside .env');
+    }
   }
 }
 
@@ -21,6 +24,11 @@ let cached: MongoConnection | null = null;
 export async function connectToDatabase(): Promise<MongoConnection> {
   if (cached) {
     return cached;
+  }
+
+  // Skip database connection during build time
+  if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL) {
+    throw new Error('Database connection not available during build time');
   }
 
   // Validate DATABASE_URL is available at runtime

@@ -12,6 +12,9 @@ import {
 } from 'react-icons/md';
 import { FaUsers, FaShoppingCart, FaChartLine, FaEye } from 'react-icons/fa';
 
+// Force dynamic rendering to prevent build-time API calls
+export const dynamic = 'force-dynamic';
+
 const StatCard = ({ 
   title, 
   value, 

@@ -9,15 +9,15 @@ COPY . .
 
 # Set environment variables for build time
 ENV NODE_ENV=production
-ENV DATABASE_URL=""
-ENV NEXTAUTH_URL=""
-ENV NEXTAUTH_SECRET=""
-ENV GOOGLE_CLIENT_ID=""
-ENV GOOGLE_CLIENT_SECRET=""
-ENV CLOUDINARY_CLOUD_NAME=""
-ENV CLOUDINARY_API_KEY=""
-ENV CLOUDINARY_API_SECRET=""
-ENV NEXT_PUBLIC_API_BASE_URL=""
+ENV DATABASE_URL="mongodb://localhost:27017/oasismarineuae"
+ENV NEXTAUTH_URL="http://localhost:8085"
+ENV NEXTAUTH_SECRET="build-time-secret"
+ENV GOOGLE_CLIENT_ID="build-time-client-id"
+ENV GOOGLE_CLIENT_SECRET="build-time-client-secret"
+ENV CLOUDINARY_CLOUD_NAME="build-time-cloud"
+ENV CLOUDINARY_API_KEY="123456789"
+ENV CLOUDINARY_API_SECRET="build-time-secret"
+ENV NEXT_PUBLIC_API_BASE_URL="http://localhost:8085/api"
 
 RUN npm run build
 
