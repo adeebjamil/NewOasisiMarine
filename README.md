@@ -15,9 +15,26 @@ This is a [Next.js](https://nextjs.org) project built with modern web technologi
 
 ## Getting Started
 
-First, run the development server:
+### Setup Environment Variables
+
+1. Copy the example environment file:
+```bash
+cp .env.example .env.local
+```
+
+2. Edit `.env.local` with your actual credentials:
+- MongoDB connection string
+- Google OAuth credentials
+- Cloudinary API keys
+- NextAuth secret
+
+### Install Dependencies and Run
 
 ```bash
+# Install dependencies
+npm install
+
+# Run the development server
 npm run dev
 # or
 yarn dev

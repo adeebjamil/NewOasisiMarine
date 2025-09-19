@@ -23,7 +23,7 @@ A modern Next.js application with Google OAuth authentication, MongoDB database,
 
 ### 1. Environment Variables
 
-Create a `.env` file in the root directory:
+Create a `.env.local` file in the root directory:
 
 ```env
 # Database - MongoDB
@@ -36,6 +36,11 @@ NEXTAUTH_SECRET="your-secret-key-here"
 # Google OAuth
 GOOGLE_CLIENT_ID="your-google-client-id-here"
 GOOGLE_CLIENT_SECRET="your-google-client-secret-here"
+
+# Cloudinary (for image uploads)
+CLOUDINARY_CLOUD_NAME="your-cloudinary-name"
+CLOUDINARY_API_KEY="your-cloudinary-api-key"
+CLOUDINARY_API_SECRET="your-cloudinary-api-secret"
 ```
 
 ### 2. Google OAuth Setup
@@ -47,7 +52,7 @@ GOOGLE_CLIENT_SECRET="your-google-client-secret-here"
 5. Add authorized redirect URIs:
    - `http://localhost:3000/api/auth/callback/google` (development)
    - `https://yourdomain.com/api/auth/callback/google` (production)
-6. Copy Client ID and Client Secret to your `.env` file
+6. Copy Client ID and Client Secret to your `.env.local` file
 
 ### 3. MongoDB Setup
 
