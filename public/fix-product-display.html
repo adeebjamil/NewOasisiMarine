@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Product Display Issues</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .step {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .step-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .step-title {
+            flex: 1;
+            margin: 0 15px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 14px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            font-weight: 600;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .btn.error {
+            background: linear-gradient(135deg, #f85032 0%, #e73827 100%);
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status.running {
+            background: #cfe2ff;
+            color: #084298;
+            animation: pulse 1.5s infinite;
+        }
+
+        .status.success {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #842029;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .results {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .results pre {
+            margin: 0;
+            font-size: 12px;
+            color: #333;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .info-box h3 {
+            color: #0c5460;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            color: #0c5460;
+        }
+
+        .summary {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 8px;
+        }
+
+        .summary h3 {
+            color: #155724;
+            margin-bottom: 15px;
+        }
+
+        .summary ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .summary li {
+            padding: 8px 0;
+            color: #155724;
+            display: flex;
+            align-items: center;
+        }
+
+        .summary li:before {
+            content: '✓';
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background: #28a745;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            margin-right: 10px;
+            font-weight: bold;
+            line-height: 24px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Fix Product Display Issues</h1>
+            <p>Automated repair system for products not showing on frontend</p>
+        </div>
+
+        <div class="content">
+            <div class="info-box">
+                <h3>⚠️ Issues Being Fixed:</h3>
+                <ul>
+                    <li>Products not appearing on category pages (missing subcategories)</li>
+                    <li>Product detail pages showing "Product not found" (missing slugs)</li>
+                    <li>242 products orphaned with non-existent subcategoryIds</li>
+                    <li>0 subcategories in database but 20 referenced in products</li>
+                </ul>
+            </div>
+
+            <!-- Step 1: Restore Subcategories -->
+            <div class="step" id="step1">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <div class="step-title">Restore Missing Subcategories</div>
+                    <span class="status pending" id="status1">Pending</span>
+                    <button class="btn" id="btn1" onclick="runStep1()">
+                        Start Step 1
+                    </button>
+                </div>
+                <p style="color: #666; font-size: 14px; margin-bottom: 10px;">
+                    This will recreate all 20 missing subcategories (FIRE SAFETY, PIPE FITTINGS, VALVES, etc.)
+                </p>
+                <div id="results1" style="display: none;"></div>
+            </div>
+
+            <!-- Step 2: Generate Missing Slugs -->
+            <div class="step" id="step2">
+                <div class="step-header">
+                    <div class="step-number">2</div>
+                    <div class="step-title">Generate Missing Slugs</div>
+                    <span class="status pending" id="status2">Pending</span>
+                    <button class="btn" id="btn2" onclick="runStep2()" disabled>
+                        Start Step 2
+                    </button>
+                </div>
+                <p style="color: #666; font-size: 14px; margin-bottom: 10px;">
+                    Generate URL-friendly slugs for all products to enable detail page access
+                </p>
+                <div id="results2" style="display: none;"></div>
+            </div>
+
+            <!-- Step 3: Verify Fix -->
+            <div class="step" id="step3">
+                <div class="step-header">
+                    <div class="step-number">3</div>
+                    <div class="step-title">Verify All Fixes</div>
+                    <span class="status pending" id="status3">Pending</span>
+                    <button class="btn" id="btn3" onclick="runStep3()" disabled>
+                        Verify
+                    </button>
+                </div>
+                <p style="color: #666; font-size: 14px; margin-bottom: 10px;">
+                    Check that all products are now accessible and displaying correctly
+                </p>
+                <div id="results3" style="display: none;"></div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <!-- Summary (hidden initially) -->
+            <div id="summary" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let completedSteps = 0;
+
+        async function runStep1() {
+            const btn = document.getElementById('btn1');
+            const status = document.getElementById('status1');
+            const results = document.getElementById('results1');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>Running...';
+            status.className = 'status running';
+            status.textContent = 'Running...';
+            results.style.display = 'block';
+            results.innerHTML = '<p style="color: #666;">Restoring subcategories...</p>';
+
+            try {
+                const response = await fetch('/api/admin/restore-subcategories', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    status.className = 'status success';
+                    status.textContent = 'Success';
+                    btn.className = 'btn success';
+                    btn.textContent = '✓ Completed';
+                    
+                    let html = '<div class="results"><h4 style="color: #28a745; margin-bottom: 10px;">✓ Subcategories Restored</h4>';
+                    html += `<p><strong>Restored:</strong> ${data.restored?.length || 0} subcategories</p>`;
+                    html += `<p><strong>Total Products:</strong> ${data.totalProducts}</p>`;
+                    
+                    if (data.restored && data.restored.length > 0) {
+                        html += '<p style="margin-top: 10px;"><strong>Subcategories:</strong></p>';
+                        html += '<ul style="margin-left: 20px; margin-top: 5px;">';
+                        data.restored.slice(0, 5).forEach(sub => {
+                            html += `<li>${sub.name} (${sub.productCount} products)</li>`;
+                        });
+                        if (data.restored.length > 5) {
+                            html += `<li>... and ${data.restored.length - 5} more</li>`;
+                        }
+                        html += '</ul>';
+                    }
+                    html += '</div>';
+                    results.innerHTML = html;
+                    
+                    completedSteps++;
+                    updateProgress();
+                    
+                    // Enable step 2
+                    document.getElementById('btn2').disabled = false;
+                } else {
+                    throw new Error(data.error || 'Failed to restore subcategories');
+                }
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = 'Failed';
+                btn.className = 'btn error';
+                btn.textContent = '✗ Failed';
+                results.innerHTML = `<div class="results"><p style="color: #dc3545;"><strong>Error:</strong> ${error.message}</p></div>`;
+            }
+        }
+
+        async function runStep2() {
+            const btn = document.getElementById('btn2');
+            const status = document.getElementById('status2');
+            const results = document.getElementById('results2');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>Running...';
+            status.className = 'status running';
+            status.textContent = 'Running...';
+            results.style.display = 'block';
+            results.innerHTML = '<p style="color: #666;">Generating slugs...</p>';
+
+            try {
+                const response = await fetch('/api/admin/fix-slugs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    status.className = 'status success';
+                    status.textContent = 'Success';
+                    btn.className = 'btn success';
+                    btn.textContent = '✓ Completed';
+                    
+                    let html = '<div class="results"><h4 style="color: #28a745; margin-bottom: 10px;">✓ Slugs Generated</h4>';
+                    html += `<p><strong>Total Products:</strong> ${data.totalProducts}</p>`;
+                    html += `<p><strong>Updated:</strong> ${data.updated} products</p>`;
+                    html += `<p><strong>Already Had Slugs:</strong> ${data.totalProducts - data.updated}</p>`;
+                    html += '</div>';
+                    results.innerHTML = html;
+                    
+                    completedSteps++;
+                    updateProgress();
+                    
+                    // Enable step 3
+                    document.getElementById('btn3').disabled = false;
+                } else {
+                    throw new Error(data.error || 'Failed to generate slugs');
+                }
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = 'Failed';
+                btn.className = 'btn error';
+                btn.textContent = '✗ Failed';
+                results.innerHTML = `<div class="results"><p style="color: #dc3545;"><strong>Error:</strong> ${error.message}</p></div>`;
+            }
+        }
+
+        async function runStep3() {
+            const btn = document.getElementById('btn3');
+            const status = document.getElementById('status3');
+            const results = document.getElementById('results3');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>Verifying...';
+            status.className = 'status running';
+            status.textContent = 'Running...';
+            results.style.display = 'block';
+            results.innerHTML = '<p style="color: #666;">Verifying fixes...</p>';
+
+            try {
+                const response = await fetch('/api/admin/diagnose-product-display');
+                const data = await response.json();
+
+                if (data.success) {
+                    const diagnosis = data.diagnosis;
+                    
+                    status.className = 'status success';
+                    status.textContent = 'Success';
+                    btn.className = 'btn success';
+                    btn.textContent = '✓ Completed';
+                    
+                    let html = '<div class="results"><h4 style="color: #28a745; margin-bottom: 10px;">✓ Verification Complete</h4>';
+                    html += `<p><strong>Total Products:</strong> ${diagnosis.productCounts.total}</p>`;
+                    html += `<p><strong>Active Products:</strong> ${diagnosis.productCounts.active}</p>`;
+                    html += `<p><strong>Products with Slugs:</strong> ${diagnosis.productCounts.withSlug}</p>`;
+                    html += `<p><strong>Subcategories in DB:</strong> ${diagnosis.categoriesStatus.subcategories}</p>`;
+                    html += `<p><strong>Critical Issues:</strong> ${diagnosis.criticalIssues.length}</p>`;
+                    
+                    if (diagnosis.criticalIssues.length === 0) {
+                        html += '<p style="color: #28a745; margin-top: 10px; font-weight: 600;">🎉 All issues resolved!</p>';
+                    } else {
+                        html += '<p style="color: #ffc107; margin-top: 10px;"><strong>Remaining Issues:</strong></p>';
+                        html += '<ul style="margin-left: 20px;">';
+                        diagnosis.criticalIssues.forEach(issue => {
+                            html += `<li style="color: #856404;">${issue.issue}</li>`;
+                        });
+                        html += '</ul>';
+                    }
+                    html += '</div>';
+                    results.innerHTML = html;
+                    
+                    completedSteps++;
+                    updateProgress();
+                    
+                    // Show summary
+                    showSummary(diagnosis);
+                } else {
+                    throw new Error(data.error || 'Verification failed');
+                }
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = 'Failed';
+                btn.className = 'btn error';
+                btn.textContent = '✗ Failed';
+                results.innerHTML = `<div class="results"><p style="color: #dc3545;"><strong>Error:</strong> ${error.message}</p></div>`;
+            }
+        }
+
+        function updateProgress() {
+            const progress = (completedSteps / 3) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function showSummary(diagnosis) {
+            const summary = document.getElementById('summary');
+            const noIssues = diagnosis.criticalIssues.length === 0;
+            
+            let html = `<div class="summary">
+                <h3>🎉 ${noIssues ? 'All Fixes Completed Successfully!' : 'Fixes Completed with Warnings'}</h3>
+                <ul>
+                    <li>Restored ${diagnosis.categoriesStatus.subcategories} subcategories</li>
+                    <li>${diagnosis.productCounts.withSlug} products now have slugs</li>
+                    <li>${diagnosis.productCounts.active} active products are accessible</li>
+                    <li>Product pages and detail pages are now working</li>
+                </ul>
+            `;
+            
+            if (noIssues) {
+                html += `
+                    <div style="margin-top: 20px; padding: 15px; background: white; border-radius: 8px;">
+                        <h4 style="color: #28a745; margin-bottom: 10px;">✅ What to do next:</h4>
+                        <ol style="margin-left: 20px; color: #155724;">
+                            <li>Refresh your Fire Safety product page - all products should now appear</li>
+                            <li>Test product detail pages by clicking on any product</li>
+                            <li>Check other category pages to verify all products are visible</li>
+                            <li>Create new products - they will automatically get slugs and proper category assignment</li>
+                        </ol>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            summary.innerHTML = html;
+            summary.style.display = 'block';
+        }
+
+        // Auto-run on page load
+        window.addEventListener('load', () => {
+            console.log('Product Display Fix Tool Loaded');
+            console.log('Ready to fix: Missing subcategories and product slugs');
+        });
+    </script>
+</body>
+</html>

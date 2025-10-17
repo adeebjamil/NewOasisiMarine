@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Product - Oasis Marine</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .search-box {
+            margin: 20px 0;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .loading {
+            display: none;
+            color: #666;
+            margin: 20px 0;
+        }
+        .loading.show {
+            display: block;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .result.show {
+            display: block;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .product-card {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .product-card h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .product-detail {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 10px;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .product-detail .label {
+            font-weight: bold;
+            color: #666;
+        }
+        .product-detail .value {
+            color: #333;
+            word-break: break-all;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #666;
+            font-size: 16px;
+        }
+        .tab.active {
+            color: #4CAF50;
+            border-bottom: 2px solid #4CAF50;
+            margin-bottom: -2px;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Product Debug Tool</h1>
+        <p>Search for products by name and see their full details including category/subcategory assignments.</p>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('search')">Search Product</button>
+            <button class="tab" onclick="switchTab('all')">All Products</button>
+            <button class="tab" onclick="switchTab('missing')">Products Without Slug</button>
+            <button class="tab" onclick="switchTab('fix')">Fix Issues</button>
+        </div>
+
+        <!-- Search Tab -->
+        <div id="search-tab" class="tab-content active">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Enter product name (e.g., demo)" value="demo">
+                <button onclick="searchProduct()">🔍 Search Product</button>
+            </div>
+        </div>
+
+        <!-- All Products Tab -->
+        <div id="all-tab" class="tab-content">
+            <button onclick="loadAllProducts()">📦 Load All Products</button>
+            <p style="color: #666; font-size: 14px;">⚠️ This may take a moment if you have many products</p>
+        </div>
+
+        <!-- Missing Slugs Tab -->
+        <div id="missing-tab" class="tab-content">
+            <button onclick="findMissingSlugs()">🔧 Find Products Without Slugs</button>
+        </div>
+
+        <!-- Fix Issues Tab -->
+        <div id="fix-tab" class="tab-content">
+            <h3>🔧 Fix Product Issues</h3>
+            <p style="margin: 15px 0; color: #666;">These tools will fix common product issues in the database.</p>
+            
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 5px; margin: 10px 0;">
+                <h4 style="margin-top: 0;">1. Fix Category/Subcategory IDs</h4>
+                <p style="color: #666; font-size: 14px;">Converts string IDs to proper MongoDB ObjectIds. This fixes products not showing on category pages.</p>
+                <button onclick="fixProductIds()">🔄 Fix Category/Subcategory IDs</button>
+            </div>
+
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 5px; margin: 10px 0;">
+                <h4 style="margin-top: 0;">2. Generate Missing Slugs</h4>
+                <p style="color: #666; font-size: 14px;">Creates SEO-friendly slugs for products that don't have one.</p>
+                <button onclick="fixAllSlugs()">🔄 Generate Missing Slugs</button>
+            </div>
+
+            <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                <strong>⚠️ Note:</strong> These operations are safe to run multiple times.
+            </div>
+        </div>
+
+        <div id="loading" class="loading">
+            <p>🔄 Loading...</p>
+        </div>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+
+            // Clear results
+            document.getElementById('result').classList.remove('show');
+            document.getElementById('result').innerHTML = '';
+        }
+
+        async function searchProduct() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            if (!searchTerm) {
+                alert('Please enter a product name');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const response = await fetch('/api/admin/products');
+                const data = await response.json();
+
+                const products = data.products.filter(p => 
+                    p.name.toLowerCase().includes(searchTerm)
+                );
+
+                hideLoading();
+                displayProducts(products, searchTerm);
+            } catch (error) {
+                hideLoading();
+                showError('Error searching products: ' + error.message);
+            }
+        }
+
+        async function loadAllProducts() {
+            showLoading();
+
+            try {
+                const response = await fetch('/api/admin/products');
+                const data = await response.json();
+
+                hideLoading();
+                displayProducts(data.products, null, 'all');
+            } catch (error) {
+                hideLoading();
+                showError('Error loading products: ' + error.message);
+            }
+        }
+
+        async function findMissingSlugs() {
+            showLoading();
+
+            try {
+                const response = await fetch('/api/admin/products');
+                const data = await response.json();
+
+                const productsWithoutSlug = data.products.filter(p => !p.slug);
+
+                hideLoading();
+                
+                if (productsWithoutSlug.length === 0) {
+                    showSuccess('✅ All products have slugs!');
+                } else {
+                    displayProducts(productsWithoutSlug, null, 'missing-slugs');
+                }
+            } catch (error) {
+                hideLoading();
+                showError('Error checking products: ' + error.message);
+            }
+        }
+
+        function displayProducts(products, searchTerm, type) {
+            const resultDiv = document.getElementById('result');
+            
+            if (products.length === 0) {
+                resultDiv.className = 'result show info';
+                resultDiv.innerHTML = searchTerm 
+                    ? `<h3>No products found matching "${searchTerm}"</h3>`
+                    : '<h3>No products found</h3>';
+                return;
+            }
+
+            let html = '<div class="success">';
+            
+            if (type === 'all') {
+                html += `<h3>📦 All Products (${products.length})</h3>`;
+            } else if (type === 'missing-slugs') {
+                html += `<h3>⚠️ Products Without Slugs (${products.length})</h3>`;
+                html += `<p style="margin-top: 10px;"><button onclick="fixAllSlugs()">🔧 Fix All Missing Slugs</button></p>`;
+            } else {
+                html += `<h3>Found ${products.length} product(s) matching "${searchTerm}"</h3>`;
+            }
+            
+            html += '</div>';
+
+            products.forEach(product => {
+                html += `
+                    <div class="product-card">
+                        <h3>${product.name}</h3>
+                        <span class="status-badge ${product.isActive ? 'status-active' : 'status-inactive'}">
+                            ${product.isActive ? '✓ Active' : '✗ Inactive'}
+                        </span>
+                        
+                        <div class="product-detail">
+                            <div class="label">Product ID:</div>
+                            <div class="value">${product.id || 'N/A'}</div>
+                        </div>
+                        
+                        <div class="product-detail">
+                            <div class="label">Slug:</div>
+                            <div class="value">${product.slug || '<span style="color: red;">❌ MISSING</span>'}</div>
+                        </div>
+                        
+                        <div class="product-detail">
+                            <div class="label">Short Description:</div>
+                            <div class="value">${product.shortDescription || 'N/A'}</div>
+                        </div>
+                        
+                        <div class="product-detail">
+                            <div class="label">Category ID:</div>
+                            <div class="value">${product.categoryId || 'N/A'}</div>
+                        </div>
+                        
+                        <div class="product-detail">
+                            <div class="label">Subcategory ID:</div>
+                            <div class="value">${product.subcategoryId || 'N/A'}</div>
+                        </div>
+                        
+                        <div class="product-detail">
+                            <div class="label">Card Image:</div>
+                            <div class="value">${product.cardImage || 'N/A'}</div>
+                        </div>
+                        
+                        <div class="product-detail">
+                            <div class="label">Created:</div>
+                            <div class="value">${new Date(product.createdAt).toLocaleString()}</div>
+                        </div>
+                        
+                        <details style="margin-top: 10px;">
+                            <summary style="cursor: pointer; color: #4CAF50; font-weight: bold;">View Full JSON</summary>
+                            <pre>${JSON.stringify(product, null, 2)}</pre>
+                        </details>
+                    </div>
+                `;
+            });
+
+            resultDiv.className = 'result show';
+            resultDiv.innerHTML = html;
+        }
+
+        async function fixProductIds() {
+            if (!confirm('This will fix all products with incorrect category/subcategory ID types. Continue?')) {
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const response = await fetch('/api/admin/fix-product-ids', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                hideLoading();
+
+                if (data.success) {
+                    let message = `✅ Product IDs Fixed Successfully!<br><br>`;
+                    message += `<div class="stats">`;
+                    message += `<div class="stats-item"><span class="stats-label">Total Products:</span><span class="stats-value">${data.stats.totalProducts}</span></div>`;
+                    message += `<div class="stats-item"><span class="stats-label">Fixed:</span><span class="stats-value">${data.stats.fixed}</span></div>`;
+                    message += `<div class="stats-item"><span class="stats-label">Skipped (Already OK):</span><span class="stats-value">${data.stats.skipped}</span></div>`;
+                    message += `<div class="stats-item"><span class="stats-label">Errors:</span><span class="stats-value">${data.stats.errors}</span></div>`;
+                    message += `</div>`;
+                    
+                    if (data.fixedProducts && data.fixedProducts.length > 0) {
+                        message += `<br><strong>Fixed Products:</strong><br>`;
+                        message += `<div class="product-list" style="max-height: 200px; overflow-y: auto;">`;
+                        data.fixedProducts.forEach(name => {
+                            message += `<div class="product-item">✓ ${name}</div>`;
+                        });
+                        message += `</div>`;
+                    }
+                    
+                    showSuccess(message);
+                } else {
+                    showError('Migration failed: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                hideLoading();
+                showError('Error running migration: ' + error.message);
+            }
+        }
+
+        async function fixAllSlugs() {
+            if (!confirm('This will generate slugs for all products that don\'t have one. Continue?')) {
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const response = await fetch('/api/admin/fix-slugs', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                hideLoading();
+
+                if (data.success) {
+                    showSuccess(`✅ Migration successful!<br>
+                        Updated: ${data.stats.updated} products<br>
+                        <button onclick="findMissingSlugs()">Refresh List</button>
+                    `);
+                } else {
+                    showError('Migration failed: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                hideLoading();
+                showError('Error running migration: ' + error.message);
+            }
+        }
+
+        function showLoading() {
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('result').classList.remove('show');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('show');
+        }
+
+        function showSuccess(message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'result show success';
+            resultDiv.innerHTML = message;
+        }
+
+        function showError(message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'result show error';
+            resultDiv.innerHTML = `<h3>Error</h3><p>${message}</p>`;
+        }
+
+        // Auto-search on page load if there's a value
+        window.addEventListener('load', () => {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput.value) {
+                searchProduct();
+            }
+        });
+    </script>
+</body>
+</html>
