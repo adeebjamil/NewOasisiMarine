@@ -78,10 +78,7 @@ function generatePageContent(pageName: string, pagePath: string, isCategory: boo
   
   return `'use client';
 
-import { useSession } from 'next-auth/react';
-
 export default function ${componentName}() {
-  const { data: session } = useSession();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -128,11 +125,7 @@ export default function ${componentName}() {
                 Page path: <code className="bg-gray-100 px-2 py-1 rounded">${pagePath}</code>
               </p>
               <p className="text-sm text-gray-500 mt-2">
-                {session ? (
-                  <>Logged in as: {session.user?.name || session.user?.email}</>
-                ) : (
-                  <>Welcome! Explore our products and services</>
-                )}
+                Welcome! Explore our products and services
               </p>
             </div>
           </div>
