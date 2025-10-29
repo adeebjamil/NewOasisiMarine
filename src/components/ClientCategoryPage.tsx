@@ -948,7 +948,17 @@ export default function ClientCategoryPage({
                                 whileTap={{ scale: 0.98 }}
                               >
                                 <Link
-                                  href={`/products/${(product.subcategory?.href || '').replace('/products/', '') || pageInfo?.name.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-') || 'category'}/${product.slug || product.name.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-')}`}
+                                  href={`/products/${
+                                    // Use subcategory name converted to slug format
+                                    (product.subcategory?.name || pageInfo?.name || 'category')
+                                      .toLowerCase()
+                                      .replace(/[^\w\s-]/g, '')
+                                      .replace(/\s+/g, '-')
+                                      .replace(/-+/g, '-')
+                                  }/${
+                                    // Use product slug or generate from name
+                                    product.slug || product.name.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-')
+                                  }`}
                                   className="inline-flex items-center text-blue-600 font-medium text-xs group-hover:text-blue-700 transition-colors duration-200"
                                 >
                                   View Details
