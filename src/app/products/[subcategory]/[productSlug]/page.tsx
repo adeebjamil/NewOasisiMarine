@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { Suspense } from "react";
 import ProductDetailClient from "../../../../components/ProductDetailClient";
+import ProductModel from "@/models/Product";
 
 // Force dynamic rendering - no caching
 export const dynamic = 'force-dynamic';
@@ -10,20 +11,11 @@ interface Props {
   params: Promise<{ subcategory: string; productSlug: string }>;
 }
 
-// Fetch product by slug to get its ID
+// Fetch product by slug directly from database
 async function fetchProductBySlug(slug: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-    const response = await fetch(`${baseUrl}/api/products?slug=${slug}`, {
-      cache: 'no-store',
-    });
-    
-    if (!response.ok) {
-      return null;
-    }
-    
-    const products = await response.json();
-    return products.find((p: any) => p.slug === slug) || null;
+    const product = await ProductModel.findBySlug(slug);
+    return product;
   } catch (error) {
     console.error('Error fetching product by slug:', error);
     return null;
@@ -79,7 +71,7 @@ export default async function ProductPage({ params }: Props) {
   }
   
   // Map to the format expected by ProductDetailClient
-  const mappedParams = { id: product.id };
+  const mappedParams = { id: product._id?.toString() || '' };
   
   return (
     <Suspense fallback={
