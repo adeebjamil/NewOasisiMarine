@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import AdminLayout from '../../../components/AdminLayout';
-import { useAdminAuth } from '../../../hooks/useAdminAuth';
 import { 
   MdPeople, 
   MdInventory, 
@@ -46,36 +45,15 @@ const StatCard = ({
 );
 
 export default function AdminDashboard() {
-  const { isAuthenticated, isLoading } = useAdminAuth();
-  const [currentTime, setCurrentTime] = useState<Date | null>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
-    // Initialize time on client side to avoid hydration mismatch
-    setCurrentTime(new Date());
-    
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
 
     return () => clearInterval(timer);
   }, []);
-
-  // Show loading state while checking authentication
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Checking authentication...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Don't render if not authenticated
-  if (!isAuthenticated) {
-    return null;
-  }
 
   const recentActivities = [
     { id: 1, action: 'New user registered', time: '2 minutes ago', type: 'user' },
@@ -100,10 +78,10 @@ export default function AdminDashboard() {
             <div className="text-right">
               <p className="text-purple-100 text-sm">Current Time</p>
               <p className="text-xl font-semibold">
-                {currentTime ? currentTime.toLocaleTimeString() : '--:--:--'}
+                {currentTime.toLocaleTimeString()}
               </p>
               <p className="text-purple-100 text-sm">
-                {currentTime ? currentTime.toLocaleDateString() : 'Loading...'}
+                {currentTime.toLocaleDateString()}
               </p>
             </div>
           </div>

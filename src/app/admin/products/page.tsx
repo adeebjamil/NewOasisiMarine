@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../../components/AdminLayout';
-import { useAdminAuth } from '../../../hooks/useAdminAuth';
 import { FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaEye, FaImage, FaUpload, FaFilePdf } from 'react-icons/fa';
 import { MdCategory, MdInventory, MdAdd, MdRemove } from 'react-icons/md';
 import { toast } from 'react-toastify';
@@ -46,7 +45,6 @@ interface Subcategory {
 }
 
 export default function ProductsPage() {
-  const { isAuthenticated, isLoading: authLoading } = useAdminAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -57,6 +55,7 @@ export default function ProductsPage() {
   const [subcategoryFilter, setSubcategoryFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [uploadingFiles, setUploadingFiles] = useState<{ [key: string]: boolean }>({});
+
   const [newProduct, setNewProduct] = useState({
     name: '',
     shortDescription: '',
@@ -74,31 +73,14 @@ export default function ProductsPage() {
 
   // Fetch products and categories on component mount
   useEffect(() => {
-    if (isAuthenticated) {
-      // Check admin authentication
-      const adminSession = Cookies.get('adminSession');
-      const adminUser = Cookies.get('adminUser');
-      setIsAdmin(adminSession === 'true' && adminUser === 'adeeb');
-      
-      fetchProducts();
-      fetchCategories();
-    }
-  }, [isAuthenticated]);
-
-  if (authLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Checking authentication...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return null;
-  }
+    // Check admin authentication
+    const adminSession = Cookies.get('adminSession');
+    const adminUser = Cookies.get('adminUser');
+    setIsAdmin(adminSession === 'true' && adminUser === 'adeeb');
+    
+    fetchProducts();
+    fetchCategories();
+  }, []);
 
   const fetchProducts = async () => {
     try {
@@ -222,6 +204,15 @@ export default function ProductsPage() {
   const addNewProduct = async () => {
     if (newProduct.name && newProduct.shortDescription && newProduct.cardImage) {
       try {
+        console.log('🔍 ADMIN PANEL - Creating new product with data:', {
+          name: newProduct.name,
+          categoryId: newProduct.categoryId,
+          subcategoryId: newProduct.subcategoryId,
+          hasSubcategoryId: !!newProduct.subcategoryId,
+          subcategoryIdType: typeof newProduct.subcategoryId,
+          subcategoryIdValue: newProduct.subcategoryId,
+          fullProduct: newProduct
+        });
         const response = await fetch('/api/admin/products', {
           method: 'POST',
           headers: {
@@ -230,9 +221,13 @@ export default function ProductsPage() {
           body: JSON.stringify(newProduct),
         });
 
+        console.log('Create product response status:', response.status);
+
         if (response.ok) {
           const data = await response.json();
-          setProducts([data.product, ...products]);
+          console.log('Product created successfully:', data);
+          
+          // Reset form
           setNewProduct({
             name: '',
             shortDescription: '',
@@ -248,13 +243,20 @@ export default function ProductsPage() {
             isActive: true
           });
           setShowAddForm(false);
+          
+          // Refetch all products to ensure frontend is in sync with backend
+          await fetchProducts();
+          
           toast.success('Product created successfully');
         } else {
-          toast.error('Failed to create product');
+          const errorData = await response.json();
+          console.error('Failed to create product:', errorData);
+          toast.error(`Failed to create product: ${errorData.error || 'Unknown error'}`);
         }
       } catch (error) {
         console.error('Error creating product:', error);
-        toast.error('Failed to create product');
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        toast.error(`Failed to create product: ${errorMessage}`);
       }
     } else {
       toast.error('Please fill in required fields');

@@ -78,7 +78,11 @@ function generatePageContent(pageName: string, pagePath: string, isCategory: boo
   
   return `'use client';
 
+import { useSession } from 'next-auth/react';
+
 export default function ${componentName}() {
+  const { data: session } = useSession();
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}

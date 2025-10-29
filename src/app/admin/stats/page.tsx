@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../../components/AdminLayout';
-import { useAdminAuth } from '../../../hooks/useAdminAuth';
 import { FaUsers, FaShoppingCart, FaDollarSign, FaEye, FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import { MdTrendingUp, MdTrendingDown, MdAnalytics, MdNavigation, MdCategory } from 'react-icons/md';
 
@@ -59,32 +58,14 @@ interface ChartData {
 }
 
 export default function StatsPage() {
-  const { isAuthenticated, isLoading: authLoading } = useAdminAuth();
   const [timeRange, setTimeRange] = useState('30');
   const [statsData, setStatsData] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchStatsData();
-    }
-  }, [isAuthenticated]);
-
-  if (authLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Checking authentication...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return null;
-  }
+    fetchStatsData();
+  }, []);
 
   const fetchStatsData = async () => {
     try {

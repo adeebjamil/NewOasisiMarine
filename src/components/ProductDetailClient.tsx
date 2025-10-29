@@ -88,7 +88,6 @@ interface Product {
 interface ProductDetailClientProps {
   params: { id: string };
 }
-
 export default function ProductDetailClient({ params }: ProductDetailClientProps) {
   const router = useRouter();
   const [product, setProduct] = useState<Product | null>(null);
