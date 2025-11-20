@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../../components/AdminLayout';
-import { useAdminAuth } from '../../../hooks/useAdminAuth';
 import { FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaChevronDown, FaChevronRight, FaFolder, FaFile } from 'react-icons/fa';
 import { MdDragIndicator, MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import { toast, ToastContainer } from 'react-toastify';
@@ -30,7 +29,6 @@ interface NavCategory {
 }
 
 export default function NavbarPage() {
-  const { isAuthenticated, isLoading: authLoading } = useAdminAuth();
   const [navCategories, setNavCategories] = useState<NavCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<NavCategory | null>(null);
@@ -69,25 +67,8 @@ export default function NavbarPage() {
 
   // Load categories on component mount
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchCategories();
-    }
-  }, [isAuthenticated]);
-
-  if (authLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Checking authentication...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return null;
-  }
+    fetchCategories();
+  }, []);
 
   // Upload file function
   const uploadFile = async (file: File): Promise<string> => {

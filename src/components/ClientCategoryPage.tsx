@@ -199,14 +199,33 @@ export default function ClientCategoryPage({
             image: foundCategory.image,
           });
 
+          // Add cache-busting timestamp to force fresh data
+          const cacheBuster = `_t=${Date.now()}`;
           const response = await fetch(
-            `/api/admin/products?categoryId=${foundCategory.id}`
+            `/api/admin/products?categoryId=${foundCategory.id}&${cacheBuster}`,
+            {
+              cache: 'no-store',
+              headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+              }
+            }
           );
           if (response.ok) {
             const data = await response.json();
+            console.log('🔍 Category products fetched:', data.products?.length);
+            
+            // Find inactive products
+            const inactiveProducts = data.products?.filter((product: Product) => !product.isActive) || [];
+            if (inactiveProducts.length > 0) {
+              console.log('⚠️ INACTIVE PRODUCTS (not showing on frontend):', inactiveProducts.map((p: Product) => p.name));
+            }
+            
             const filteredProducts =
               data.products?.filter((product: Product) => product.isActive) ||
               [];
+            console.log('✅ Active products showing:', filteredProducts.length);
             setProducts(filteredProducts);
           } else {
             throw new Error("Failed to fetch products for category");
@@ -235,8 +254,18 @@ export default function ClientCategoryPage({
               image: foundSubcategory.image,
             });
 
+            // Add cache-busting timestamp to force fresh data
+            const cacheBuster = `_t=${Date.now()}`;
             const response = await fetch(
-              `/api/admin/products?subcategoryId=${foundSubcategory.id}`
+              `/api/admin/products?subcategoryId=${foundSubcategory.id}&${cacheBuster}`,
+              {
+                cache: 'no-store',
+                headers: {
+                  'Cache-Control': 'no-cache, no-store, must-revalidate',
+                  'Pragma': 'no-cache',
+                  'Expires': '0'
+                }
+              }
             );
             if (response.ok) {
               const data = await response.json();
@@ -246,6 +275,13 @@ export default function ClientCategoryPage({
                 isActive: p.isActive,
                 subcategoryId: p.subcategoryId 
               })));
+              
+              // Find inactive products
+              const inactiveProducts = data.products?.filter((product: Product) => !product.isActive) || [];
+              if (inactiveProducts.length > 0) {
+                console.log('⚠️ INACTIVE PRODUCTS (not showing on frontend):', inactiveProducts.map((p: Product) => p.name));
+              }
+              
               const filteredProducts =
                 data.products?.filter((product: Product) => product.isActive) ||
                 [];
@@ -912,7 +948,17 @@ export default function ClientCategoryPage({
                                 whileTap={{ scale: 0.98 }}
                               >
                                 <Link
-                                  href={`/products/detail/${product.slug || product.name.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-')}`}
+                                  href={`/products/${
+                                    // Use subcategory name converted to slug format
+                                    (product.subcategory?.name || pageInfo?.name || 'category')
+                                      .toLowerCase()
+                                      .replace(/[^\w\s-]/g, '')
+                                      .replace(/\s+/g, '-')
+                                      .replace(/-+/g, '-')
+                                  }/${
+                                    // Use product slug or generate from name
+                                    product.slug || product.name.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-')
+                                  }`}
                                   className="inline-flex items-center text-blue-600 font-medium text-xs group-hover:text-blue-700 transition-colors duration-200"
                                 >
                                   View Details

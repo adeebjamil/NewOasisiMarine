@@ -2,6 +2,10 @@ import React from 'react';
 import type { Metadata } from 'next';
 import CategoriesClient from '../../components/CategoriesClient';
 
+// Force dynamic rendering - no caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: 'Product Categories | Oasis Marine Trading LLC',
   description:
